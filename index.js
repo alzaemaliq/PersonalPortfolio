@@ -60,10 +60,10 @@ const foregroundImage = new Image();
 
 // Specify source paths for images
 mapImage.src = './imageSources/LobbyMap.png';
-playerDown.src = '/characterResources/playerDown.png';
-playerUp.src = '/characterResources/playerUp.png';
-playerLeft.src = '/characterResources/playerLeft.png';
-playerRight.src = '/characterResources/playerRight.png';
+playerDown.src = './characterResources/playerDown.png';
+playerUp.src = './characterResources/playerUp.png';
+playerLeft.src = './characterResources/playerLeft.png';
+playerRight.src = './characterResources/playerRight.png';
 foregroundImage.src = './imageSources/ForegroundMap.png';
 
 // Define scale factors and movement speed
