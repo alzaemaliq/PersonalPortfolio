@@ -60,16 +60,16 @@ const foregroundImage = new Image();
 
 // Specify source paths for images
 mapImage.src = './imageSources/LobbyMap.png';
-playerDown.src = '/characterResources/playerDown.png';
-playerUp.src = '/characterResources/playerUp.png';
-playerLeft.src = '/characterResources/playerLeft.png';
-playerRight.src = '/characterResources/playerRight.png';
+playerDown.src = './characterResources/playerDown.png';
+playerUp.src = './characterResources/playerUp.png';
+playerLeft.src = './characterResources/playerLeft.png';
+playerRight.src = './characterResources/playerRight.png';
 foregroundImage.src = './imageSources/ForegroundMap.png';
 
 // Define scale factors and movement speed
 const mapScale = 3;
 const playerScale = 1.5;
-const speed = 5;
+const speed = 4;
 
 // Initialize scaled dimensions and positioning
 let mapScaledWidth, mapScaledHeight, mapX, mapY;
@@ -84,7 +84,7 @@ const keysPressed = {
     s: false,
     d: false
 };
-
+let keyOrder = [];
 let frameIndex = 0;  // Current frame index for walking animation
 let lastAnimationTime = 0;
 const frameDuration = 150;  // Time each frame is displayed in milliseconds
@@ -147,10 +147,6 @@ function drawContent() {
     ctx.imageSmoothingEnabled = false;
     ctx.drawImage(mapImage, mapX, mapY, mapScaledWidth, mapScaledHeight);
 
-    boundaries.forEach(boundary => {
-        boundary.draw(ctx, mapX, mapY);
-    });
-
     let playerImage = playerDown;
     switch (lastDirection) {
         case 'up':
@@ -175,11 +171,6 @@ function drawContent() {
         frameOffset, 0, playerCropWidth, playerCropHeight,
         playerX, playerY,
         playerScaledWidth, playerScaledHeight);
-
-    // Drawing hitbox for debugging
-    ctx.strokeStyle = 'blue';  // Set the color of the hitbox
-    ctx.lineWidth = 1;        // Set the line width of the hitbox
-    ctx.strokeRect(playerX + 5, playerY + 48, 64, 48);
 
     ctx.drawImage(foregroundImage, foregroundX, foregroundY, foregroundScaledWidth, foregroundScaledHeight);
 }

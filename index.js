@@ -8,6 +8,13 @@ for (let i = 0; i < collisions.length; i += 70) {
     collisionsMap.push(collisions.slice(i, 70 + i));
 }
 
+const interactiveBlocks = [];
+for (let i = 0; i < interactive.length; i += 70) {
+    interactiveBlocks.push(interactive.slice(i, i + 70));
+}
+console.log(interactiveBlocks);
+
+
 class Boundary {
     static width = 96;
     static height = 96;
@@ -17,6 +24,11 @@ class Boundary {
 
     draw(ctx, mapX, mapY) {
         ctx.fillStyle = 'red';
+        ctx.fillRect(this.position.x + mapX, this.position.y + mapY, Boundary.width, Boundary.height);
+    }
+
+    drawInteractive(ctx, mapX, mapY) {
+        ctx.fillStyle = 'blue';  // Change color to blue for interactive boundaries
         ctx.fillRect(this.position.x + mapX, this.position.y + mapY, Boundary.width, Boundary.height);
     }
 
@@ -47,7 +59,23 @@ collisionsMap.forEach((row, i) => {
     });
 });
 
-console.log(boundaries);
+const interactiveBoundaries = [];
+
+// Assuming 'interactive' is an array defined somewhere above this code
+interactiveBlocks.forEach((row, i) => {
+    row.forEach((symbol, j) => {
+        if ([200, 175, 285].includes(symbol)) { // Check if the symbol is one of 200, 175, or 285
+            interactiveBoundaries.push(new Boundary({
+                position: {
+                    x: j * Boundary.width,
+                    y: i * Boundary.height
+                }
+            }));
+        }
+    });
+});
+
+console.log(interactiveBoundaries);
 
 
 // Initialize images for the map, player in different directions, and foreground
@@ -139,6 +167,7 @@ function checkCollision(proposedX, proposedY) {
 
 
 // Function to draw all content on the canvas
+// Function to draw all content on the canvas
 function drawContent() {
     if (!mapImage.complete || !playerDown.complete || !playerUp.complete || !playerLeft.complete || !playerRight.complete || !foregroundImage.complete) {
         return; // Ensure all images are loaded before drawing
@@ -146,6 +175,16 @@ function drawContent() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.imageSmoothingEnabled = false;
     ctx.drawImage(mapImage, mapX, mapY, mapScaledWidth, mapScaledHeight);
+
+    // Draw collision boundaries for debugging
+    boundaries.forEach(boundary => {
+        boundary.draw(ctx, mapX, mapY);
+    });
+
+    // Draw interactive boundaries for debugging
+    interactiveBoundaries.forEach(boundary => {
+        boundary.drawInteractive(ctx, mapX, mapY);  // Now drawing interactive boundaries in blue
+    });
 
     let playerImage = playerDown;
     switch (lastDirection) {
@@ -174,6 +213,7 @@ function drawContent() {
 
     ctx.drawImage(foregroundImage, foregroundX, foregroundY, foregroundScaledWidth, foregroundScaledHeight);
 }
+
 
 
 // Event listeners and animation setup
