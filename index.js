@@ -12,23 +12,17 @@ const interactiveBlocks = [];
 for (let i = 0; i < interactive.length; i += 70) {
     interactiveBlocks.push(interactive.slice(i, i + 70));
 }
-console.log(interactiveBlocks);
-
 
 class Boundary {
     static width = 96;
     static height = 96;
-    constructor({ position }) {
+    constructor({ position, color = 'black' }) { // Default color set to black
         this.position = position;
+        this.color = color;
     }
 
     draw(ctx, mapX, mapY) {
-        ctx.fillStyle = 'red';
-        ctx.fillRect(this.position.x + mapX, this.position.y + mapY, Boundary.width, Boundary.height);
-    }
-
-    drawInteractive(ctx, mapX, mapY) {
-        ctx.fillStyle = 'blue';  // Change color to blue for interactive boundaries
+        ctx.fillStyle = this.color;
         ctx.fillRect(this.position.x + mapX, this.position.y + mapY, Boundary.width, Boundary.height);
     }
 
@@ -42,41 +36,48 @@ class Boundary {
     }
 }
 
+const symbolToColor = {
+    146: 'red', // Add this line to set color for value 146
+    200: 'blue',
+    175: 'green',
+    285: 'purple'
+};
+
 
 const boundaries = [];
 
 // Iterate through each row and each symbol within the row
 collisionsMap.forEach((row, i) => {
     row.forEach((symbol, j) => {
-        if (symbol === 146) { // Check if the symbol equals 146
+        if (symbolToColor[symbol]) { // Check if the symbol exists in the map
             boundaries.push(new Boundary({
                 position: {
                     x: j * Boundary.width,
                     y: i * Boundary.height
-                }
+                },
+                color: symbolToColor[symbol] // Use the color specified in the map
             }));
         }
     });
 });
 
+
 const interactiveBoundaries = [];
 
-// Assuming 'interactive' is an array defined somewhere above this code
+// Refactored to use color mapping
 interactiveBlocks.forEach((row, i) => {
     row.forEach((symbol, j) => {
-        if ([200, 175, 285].includes(symbol)) { // Check if the symbol is one of 200, 175, or 285
+        if (symbolToColor[symbol]) {
             interactiveBoundaries.push(new Boundary({
                 position: {
                     x: j * Boundary.width,
                     y: i * Boundary.height
-                }
+                },
+                color: symbolToColor[symbol]
             }));
         }
     });
 });
-
-console.log(interactiveBoundaries);
-
 
 // Initialize images for the map, player in different directions, and foreground
 const mapImage = new Image();
@@ -145,7 +146,6 @@ function updateDimensions() {
 }
 
 function checkCollision(proposedX, proposedY) {
-    // Compute hitbox based on proposed movement
     const hitbox = {
         left: proposedX + 5,
         right: proposedX + 5 + 64,
@@ -153,15 +153,28 @@ function checkCollision(proposedX, proposedY) {
         bottom: proposedY + 48 + 48
     };
 
+    // Check for collision with regular boundaries
     for (let boundary of boundaries) {
         const bounds = boundary.bounds(mapX, mapY);
         if (hitbox.left < bounds.right &&
             hitbox.right > bounds.left &&
             hitbox.top < bounds.bottom &&
             hitbox.bottom > bounds.top) {
-            return true;
+            return true; // Collision with regular boundary
         }
     }
+
+    // Check for interaction with interactive blocks
+    for (let boundary of interactiveBoundaries) {
+        const bounds = boundary.bounds(mapX, mapY);
+        if (hitbox.left < bounds.right &&
+            hitbox.right > bounds.left &&
+            hitbox.top < bounds.bottom &&
+            hitbox.bottom > bounds.top) {
+            console.log(`Interaction with interactive block, color: ${boundary.color}, position: (${boundary.position.x}, ${boundary.position.y})`);
+        }
+    }
+
     return false;
 }
 
@@ -176,30 +189,17 @@ function drawContent() {
     ctx.imageSmoothingEnabled = false;
     ctx.drawImage(mapImage, mapX, mapY, mapScaledWidth, mapScaledHeight);
 
-    // Draw collision boundaries for debugging
-    boundaries.forEach(boundary => {
+    // Draw both regular and interactive boundaries
+    [...boundaries, ...interactiveBoundaries].forEach(boundary => {
         boundary.draw(ctx, mapX, mapY);
-    });
-
-    // Draw interactive boundaries for debugging
-    interactiveBoundaries.forEach(boundary => {
-        boundary.drawInteractive(ctx, mapX, mapY);  // Now drawing interactive boundaries in blue
     });
 
     let playerImage = playerDown;
     switch (lastDirection) {
-        case 'up':
-            playerImage = playerUp;
-            break;
-        case 'down':
-            playerImage = playerDown;
-            break;
-        case 'left':
-            playerImage = playerLeft;
-            break;
-        case 'right':
-            playerImage = playerRight;
-            break;
+        case 'up': playerImage = playerUp; break;
+        case 'down': playerImage = playerDown; break;
+        case 'left': playerImage = playerLeft; break;
+        case 'right': playerImage = playerRight; break;
     }
 
     const playerX = (canvas.width - playerScaledWidth) / 2 + 47;
